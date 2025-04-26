@@ -1,0 +1,65 @@
+version: '3'
+
+services:
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile    # Mount your Caddyfile
+      - caddy_data:/data                    # SSL certificates, etc.
+      - caddy_config:/config
+    networks:
+      - caddy_network
+    restart: unless-stopped
+
+  # Next.js app
+  web:
+    image: node:18
+    working_dir: /app
+    volumes:
+      - .:/app
+    ports:
+      - "3000"
+    environment:
+      - NODE_ENV=development
+    command: >
+      bash -c "npm install && npx prisma db push && PORT=3000 npm run dev"
+    depends_on:
+      - postgres
+    networks:
+      - caddy_network
+
+  # PostgreSQL database
+  postgres:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_DB: database
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./database:/var/backup
+    ports:
+      - "6432:5432"
+    networks:
+      - caddy_network
+
+      
+volumes:
+  caddy_data:
+  caddy_config:
+  postgres-data:
+
+networks:
+  caddy_network:
+    driver: bridge
+
+
+
+
+
+# docker network create caddy_network

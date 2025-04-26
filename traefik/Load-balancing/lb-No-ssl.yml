@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  traefik:
+    image: traefik:v3.1.6
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - "--api.dashboard=true"                     # Enable Traefik's dashboard
+      - "--api.insecure=true"  # Optional: Only for local testing. Use secure access in production.
+      - "--providers.docker=true"                  # Enable Docker provider to discover containers
+      - "--entrypoints.web.address=:80"            # Define HTTP entrypoint
+      - "--entrypoints.websecure.address=:443"     # Define HTTPS entrypoint
+      - "--certificatesresolvers.mytls.acme.tlschallenge=true"  # Enable TLS challenge for certs
+      - "--certificatesresolvers.mytls.acme.email=incriszluv@gmail.com"  # Your email for ACME
+      - "--certificatesresolvers.mytls.acme.storage=/letsencrypt/acme.json"  # Store certs and ensures renewal
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"  # Redirect HTTP to HTTPS
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"  # Ensure redirection uses HTTPS
+
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./letsencrypt:/letsencrypt"
+
+    networks:
+      - traefik_network
+
+  nginx:
+    image: nginx:latest
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cyfamod.rule=Host(`nginx.cyfamod.com`)"  # Rule to match the domain
+      - "traefik.http.routers.cyfamod.entrypoints=web"                 # Use web entrypoint (port 80)
+      - "traefik.http.services.cyfamod-service.loadbalancer.server.port=80"  # Nginx will serve HTTP on port 80
+      - "traefik.http.services.cyfamod-service.loadbalancer.sticky=true"  # Enable sticky sessions
+
+    networks:
+      - traefik_network
+
+  apache:
+    image: httpd:latest
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cyfamod.rule=Host(`nginx.cyfamod.com`)"  # Same router rule as Nginx to share domain
+      - "traefik.http.routers.cyfamod.entrypoints=web"                 # Use web entrypoint (port 80)
+      - "traefik.http.services.cyfamod-service.loadbalancer.server.port=80"  # Apache will serve HTTP on port 80
+      - "traefik.http.services.cyfamod-service.loadbalancer.sticky=true"  # Enable sticky sessions
+
+    networks:
+      - traefik_network
+
+networks:
+  traefik_network:
+    external: true

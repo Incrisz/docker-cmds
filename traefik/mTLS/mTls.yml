@@ -1,0 +1,50 @@
+
+
+
+version: '3.8'
+
+services:
+  traefik:
+    image: traefik:v3.1.6
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.websecure.http.tls=true"  # Enable TLS on the secure entrypoint
+      - "--entrypoints.websecure.http.tls.clientca.files=/certs/ca.crt"  # Path to CA certificate
+      - "--entrypoints.websecure.http.tls.clientca.optional=false"  # Make client certs mandatory
+      - "--certificatesresolvers.mytls.acme.tlschallenge=true"
+      - "--certificatesresolvers.mytls.acme.email=incriszluv@gmail.com"
+      - "--certificatesresolvers.mytls.acme.storage=/letsencrypt/acme.json"
+
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./letsencrypt:/letsencrypt"
+      - "./certs:/certs"  # Mount the certificates directory
+
+    networks:
+      - traefik_network
+
+  apache:
+    image: httpd:latest
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.apache.rule=Host(`apache.cyfamod.com`)"
+      - "traefik.http.routers.apache.entrypoints=websecure"  # Secure route using mTLS
+      - "traefik.http.routers.apache.tls.certresolver=mytls"
+      - "traefik.http.services.apache-service.loadbalancer.server.port=80"
+
+    networks:
+      - traefik_network
+
+networks:
+  traefik_network:
+    external: true

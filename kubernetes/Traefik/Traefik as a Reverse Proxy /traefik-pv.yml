@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: traefik-pv
+spec:
+  capacity:
+    storage: 1Gi  # Match the size of the PVC
+  accessModes:
+    - ReadWriteOnce  # Match the access mode in the PVC
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""  # Leave this empty to bind to PVC without a storage class
+  hostPath:
+    path: /mnt/data  # Path on the host node to store data

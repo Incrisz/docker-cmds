@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    ports:
+      - "80:80"     # For HTTP traffic
+      - "443:443"   # For HTTPS traffic
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile   # Mount your Caddyfile
+      - caddy_data:/data                    # SSL certificates, etc.
+      - caddy_config:/config
+      # for mTLS
+      - ./ca.crt:/etc/caddy/ca.crt         # Mount CA certificate
+      - ./server.crt:/etc/caddy/server.crt  # Mount server certificate
+      - ./server.key:/etc/caddy/server.key   # Mount server key
+    networks:
+      - caddy_network
+    restart: unless-stopped
+
+  traefik:
+    image: traefik:v2.8
+    container_name: traefik
+    ports:
+      - "8001:80"   # Optional: Traefik dashboard
+      - "8081:443"  # Optional: Expose Traefik for internal HTTP and HTTPS
+      - "3000:3000"  # Optional: Expose Traefik for internal HTTP and HTTPS
+    command:
+      - "--api.insecure=true"                  # Enable Traefik Dashboard (optional)
+      - "--providers.docker=true"               # Enable Docker provider
+      - "--entrypoints.web.address=:8001"       # HTTP entry point for Traefik
+      - "--entrypoints.websecure.address=:8081"  # HTTPS entry point for Traefik
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # Allow Traefik to access Docker socket
+    networks:
+      - caddy_network
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    expose:
+      - "80"  # Nginx is exposed to other containers
+    networks:
+      - caddy_network
+    labels:
+      - "traefik.enable=true"                       # Enable Traefik for this service
+      - "traefik.http.routers.nginx.rule=Host(`caddy.cyfamod.com`)"  # Define routing rule based on host
+      - "traefik.http.services.nginx.loadbalancer.server.port=3000"      # Define port for Nginx service
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  caddy_network:
+    driver: bridge

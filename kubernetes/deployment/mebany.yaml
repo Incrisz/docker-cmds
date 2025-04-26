@@ -1,0 +1,36 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mebany-deployment
+  labels:
+    app: mebany
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mebany
+  template:
+    metadata:
+      labels:
+        app: mebany
+    spec:
+      containers:
+      - name: mebany
+        image: 08066298572/mebany:latest  # mebany web server image
+        ports:
+        - containerPort: 80  # mebany listens on port 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mebany-service
+spec:
+  type: NodePort
+  selector:
+    app: mebany
+  ports:
+    - protocol: TCP
+      port: 80            # mebany listens on port 80 in the container
+      targetPort: 80       # Maps the container port to the service
+      nodePort: 30300      # The NodePort you want to use

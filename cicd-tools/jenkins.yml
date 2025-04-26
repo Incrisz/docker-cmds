@@ -1,0 +1,8 @@
+docker run --name jenkins -p 8080:8080 -p 50000:50000 -d --restart=on-failure jenkins/jenkins:lts
+
+
+
+sudo groupadd jenkins
+sudo usermod -aG jenkins $USER
+
+sudo usermod -aG jenkins ubuntu

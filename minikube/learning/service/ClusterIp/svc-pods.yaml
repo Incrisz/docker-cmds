@@ -1,0 +1,31 @@
+# Nginx Pod YAML
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+  labels:
+    app: nginx
+spec:
+  containers:
+    - name: nginx-container
+      image: nginx:latest
+      ports:
+        - containerPort: 80
+
+
+
+# apache pod yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: apache-pod
+  labels:
+    app: apache
+spec:
+  containers:
+    - name: apache-container
+      image: httpd:latest
+      ports:
+        - containerPort: 80

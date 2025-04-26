@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+
+  # app:
+  #   image: shinsenter/laravel:latest
+  #   container_name: laravel
+  #   depends_on:
+  #     - db
+  #   environment:
+  #     DB_CONNECTION: mysql
+  #     DB_HOST: db
+  #     DB_PORT: 3306
+  #     DB_DATABASE: niger
+  #     DB_USERNAME: incrisz
+  #     DB_PASSWORD: 1ncrease
+  #   ports:
+  #     - "8080:80"
+  #   restart: always
+
+  db:
+    image: mysql:8.0
+    container_name: database
+    environment:
+      MYSQL_ROOT_PASSWORD: 1ncrease
+      MYSQL_DATABASE: niger
+      MYSQL_USER: incrisz
+      MYSQL_PASSWORD: 1ncrease
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: always
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: control
+    depends_on:
+      - db
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: 1ncrease
+      UPLOAD_LIMIT: 300M
+    ports:
+      - "8181:80"
+    restart: always
+
+volumes:
+  mysql_data:

@@ -1,0 +1,45 @@
+docker run --name sonarqube -p 9001:9000 -d --restart=on-failure sonarqube:lts
+ 
+
+# github and jenkins 
+
+# after installation 
+# then goto configure 
+# under build triggers check github webhook
+# the add the jenkins url in your repo webhook under Payload URL *
+#The function of the webhook is to pick updates on the repo like changes
+
+https://www.coachdevops.com/2024/02/how-to-integrate-sonarqube-with-github.html
+
+# sonarqube
+
+# on sonarqube start local and -create a project- insert name and submit 
+# then select jenkins then github 
+# then select your build
+# then copy snoar-project.properties code 
+sonar.projectKey=my-website
+
+# then goto your accout section
+# under security 
+# generate token and copy
+sqa_68d97242568583b205b8919ca660cc9dee2b29dc
+# jenkins
+
+# under manage jenkins goto manage plugins to install sonarqube scanner and ssh2
+
+# look for Tools under it you find sonar scanner 
+
+# then you go under system and search for SonarQube servers the add the server url 
+
+# then goto the pipeline created and goto configure at build section under sonar scanner
+
+# paste your snoar-project.properties code  into Analysis properties
+
+# Dashboard > Manage Jenkins > System then look for SonarQube servers under Server authentication token
+
+# add jenkins then select secret text then paste your token under secret then select n save
+
+
+# SSH setup jenkins
+
+# under server group center  under the server list also select and add ip

@@ -1,0 +1,57 @@
+monitor.reconxi.com {
+    reverse_proxy loyalty-club_web_1:3000
+}
+
+
+jenkins.bmp.com.ng {
+    reverse_proxy jenkins:8080
+}
+
+sonarqube.bmp.com.ng {
+    reverse_proxy sonarqube:9000
+}
+
+win.win.win.elbethelacademy.com {
+    reverse_proxy elbethel:80
+}
+
+
+
+# Load balancing
+lb.cyfamod.com {
+    reverse_proxy {
+        to nginx:80 httpd:80 
+        lb_policy least_conn 
+    }
+}
+
+
+
+
+
+
+
+
+
+# Session Stickiness n Health Checks
+
+lb.cyfamod.com {
+    reverse_proxy {
+        to nginx:80 httpd:80 
+        lb_policy least_conn
+        
+        # Health check configuration
+        health_check {
+            interval 10s        # How often to check (default is 10 seconds)
+            timeout 3s         # Timeout for each check (default is 3 seconds)
+            path /health        # Path to check (make sure this endpoint exists in your apps)
+            healthy 2  # Number of successful checks required to mark the service as healthy
+            unhealthy 2  # Number of failed checks required to mark the service as unhealthy
+        }
+
+        # Enable session stickiness
+        header {
+            set Cookie my_session {http.request.header.Cookie}
+        }
+    }
+}

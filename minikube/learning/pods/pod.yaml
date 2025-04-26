@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-nginx-pod
+  labels:
+    app: nginx
+spec:
+  containers:
+  - name: nginx-container
+    image: nginx:latest
+    ports:
+    - containerPort: 80
+
+
+# multi-container
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: multi-container-pod
+  labels:
+    app: multi-container
+spec:
+  containers:
+  - name: nginx-container
+    image: nginx:1.21
+    ports:
+    - containerPort: 80
+  - name: busybox-container
+    image: busybox:1.34
+    command: ["sh", "-c", "while true; do echo Hello from BusyBox; sleep 5; done"]
+
+
+
+
+
+
+# two 
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-a
+  labels:
+    app: app-a
+spec:
+  containers:
+  - name: app-a
+    image: busybox
+    command: ['sh', '-c', 'sleep 3600']
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-b
+  labels:
+    app: app-b
+spec:
+  containers:
+  - name: app-b
+    image: busybox
+    command: ['sh', '-c', 'sleep 3600']
+
+
+
