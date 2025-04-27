@@ -1,0 +1,55 @@
+global:
+  resolve_timeout: 5m
+  smtp_smarthost: 'business801.web-hosting.com:587'
+  smtp_from: 'incrisz@cyfamod.com'
+  smtp_auth_username: 'incrisz@cyfamod.com'
+  smtp_auth_password: 'password'
+  smtp_auth_identity: 'incrisz@cyfamod.com'
+
+route:
+  group_by: ['alertname', 'priority']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 3h
+  receiver: 'email-notifications'
+  routes:
+    - match:
+        severity: critical
+      receiver: 'email-notifications'
+
+receivers:
+  - name: 'email-notifications'
+    email_configs:
+      - send_resolved: true
+        to: 'incrisz4luv@gmail.com'
+        from: 'incrisz@cyfamod.com'
+        smarthost: 'business801.web-hosting.com:587'
+        auth_username: 'incrisz@cyfamod.com'
+        auth_password: 'password'
+        auth_identity: 'incrisz@cyfamod.com'
+        require_tls: true  # Correct place for require_tls
+        headers:
+          Subject: 'ALERT: {{ .CommonLabels.alertname }}'
+        text: |
+          {{ if eq .Status "firing" }}*ALERT: {{ .CommonLabels.alertname }}*{{ else }}*RESOLVED: {{ .CommonLabels.alertname }}*{{ end }}
+          {{ range .Alerts }}
+          *{{ if eq .Status "firing" }}{{ .Annotations.summary }}{{ else }}{{ .Annotations.resolved_summary }}{{ end }}*
+          {{ if eq .Status "firing" }}{{ .Annotations.description }}{{ else }}{{ .Annotations.resolved_description }}{{ end }}
+          *Incident Details:*
+          • Started: {{ .StartsAt }}
+          • Status: {{ .Status | toUpper }}
+          *Technical Information:*
+          • System: {{ .Labels.instance }}
+          • Job: {{ .Labels.job }}
+          {{ if eq .Status "firing" }}
+          • Severity: {{ .Labels.severity }}
+          *Impact Assessment:*
+          • Users affected: {{ if eq .Labels.job "blackbox_http" }}Website visitors{{ else }}Service users{{ end }}
+          *Diagnostic Links:*
+          • <https://grafana.website.com|View Dashboard>
+          • <https://logs.website.com|View Logs>
+          *Team to Notify:* @team-reconxi-devops
+          {{ end }}
+          {{ end }}
+
+

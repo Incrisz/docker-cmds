@@ -6,6 +6,9 @@ services:
     container_name: prometheus
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./rules/node_exporter_alerts.yml:/etc/prometheus/node_exporter_alerts.yml
+      - ./rules/blackbox_exporter_alerts.yml:/etc/prometheus/blackbox_exporter_alerts.yml
+      - ./rules/test_alerts.yml:/etc/prometheus/test_alerts.yml
     ports:
       - "9090:9090"
     restart: always
@@ -40,6 +43,8 @@ services:
     ports:
       - "9115:9115"
     restart: always
+    volumes:
+      - ./blackbox_exporter.yml:/etc/blackbox_exporter/blackbox_exporter.yml
     networks:
       - monitoring
 

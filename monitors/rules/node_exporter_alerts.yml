@@ -1,0 +1,29 @@
+groups:
+- name: node-exporter-alerts
+  rules:
+  - alert: NodeDown
+    expr: up{job="node"} == 0
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Node {{ $labels.instance }} is down"
+      description: "{{ $labels.instance }} has been down for more than 5 minutes."
+
+  - alert: HighCPUUsage
+    expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High CPU usage on {{ $labels.instance }}"
+      description: "CPU usage is above 80% on {{ $labels.instance }} for more than 10 minutes."
+
+  - alert: LowDiskSpace
+    expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100 < 20
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Low disk space on {{ $labels.instance }}"
+      description: "Available disk space is less than 20% on {{ $labels.instance }} for more than 5 minutes."

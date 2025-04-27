@@ -1,0 +1,31 @@
+groups:
+- name: blackbox-exporter-alerts
+  rules:
+  - alert: WebsiteDown
+    expr: probe_success{job="blackbox_http"} == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Website {{ $labels.instance }} is down"
+      description: "{{ $labels.instance }} has been unreachable for more than 1 minute."
+      error: "Connection failed"
+      http_status: "No response"
+
+  - alert: SSLCertificateExpiring
+    expr: probe_ssl_earliest_cert_expiry{job="blackbox_ssl"} - time() < 2592000
+    for: 1h
+    labels:
+      severity: warning
+    annotations:
+      summary: "SSL certificate for {{ $labels.instance }} expiring soon"
+      description: "SSL certificate for {{ $labels.instance }} will expire in less than 30 days."
+
+  - alert: SSLCheckFailed
+    expr: probe_success{job="blackbox_ssl"} == 0
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "SSL check failed for {{ $labels.instance }}"
+      description: "SSL certificate check failed for {{ $labels.instance }} for more than 2 minutes."
